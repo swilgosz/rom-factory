@@ -47,6 +47,64 @@ RSpec.describe ROM::Factory do
       expect(user1.class).to be(user2.class)
     end
 
+    context "when top-level custom struct class defined" do
+      before do
+        class Admin < ROM::Struct
+        end
+
+        factories.define(:user) do |f|
+          f.first_name "Jane"
+          f.last_name "Doe"
+          f.email "jane@doe.org"
+          f.timestamps
+        end
+
+        factories.define(admin: :user, struct_namespace: "") do |f|
+          f.first_name "John"
+          f.last_name "Smith"
+          f.email "john@smith.org"
+          f.type "Admin"
+          f.timestamps
+        end
+      end
+
+      after do
+        Object.method(:remove_const).(:Admin)
+      end
+
+      context "using in-memory structs" do
+        let(:user) { factories.structs[:user] }
+        let(:admin) { factories.structs[:admin] }
+
+        it "sets up a new builder recognizing custom struct class" do
+          expect(user.first_name).to eql("Jane")
+          expect(user.email).to eql("jane@doe.org")
+          expect(user).to be_kind_of(ROM::Struct::User)
+
+          expect(admin.first_name).to eql("John")
+          expect(admin.email).to eql("john@smith.org")
+          expect(admin.type).to eql("Admin")
+          expect(admin).to be_kind_of(Admin)
+        end
+      end
+
+      context "using persistable structs" do
+        let(:user) { factories[:user] }
+        let(:admin) { factories[:admin] }
+
+        it "sets up a new builder recognizing custom struct class" do
+          expect(user.first_name).to eql("Jane")
+          expect(user.email).to eql("jane@doe.org")
+          expect(user).to be_kind_of(ROM::Struct::User)
+
+          expect(admin.first_name).to eql("John")
+          expect(admin.email).to eql("john@smith.org")
+          expect(admin.type).to eql("Admin")
+          expect(admin).to be_kind_of(Admin)
+        end
+      end
+    end
+
     context "one-to-many" do
       before do
         factories.define(:task) do |f|

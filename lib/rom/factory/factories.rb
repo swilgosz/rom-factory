@@ -131,6 +131,7 @@ module ROM::Factory
     # @api public
     def define(spec, opts = EMPTY_HASH, &block)
       name, parent = spec.is_a?(Hash) ? spec.flatten(1) : spec
+      opts = spec.reject { |k, _v| k == name } if spec.is_a?(Hash)
       namespace = opts[:struct_namespace]
       relation_name = opts.fetch(:relation) { infer_relation(name) }
 
@@ -151,7 +152,6 @@ module ROM::Factory
             &block
           ).call
         end
-
       registry[name] = builder
     end
 
@@ -206,6 +206,8 @@ module ROM::Factory
 
     # @api private
     def builder_struct_namespace(ns)
+      return { namespace: nil, overridable: false } if ns == false
+
       ns ? {namespace: ns, overridable: false} : {namespace: struct_namespace, overridable: true}
     end
 

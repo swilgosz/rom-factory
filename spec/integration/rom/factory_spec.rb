@@ -59,7 +59,7 @@ RSpec.describe ROM::Factory do
           f.timestamps
         end
 
-        factories.define(admin: :user, struct_namespace: "") do |f|
+        factories.define(admin: :user, struct_namespace: false) do |f|
           f.first_name "John"
           f.last_name "Smith"
           f.email "john@smith.org"
